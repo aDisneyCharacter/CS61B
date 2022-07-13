@@ -113,12 +113,64 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
+        searchEntries(board);
+/*        Tile t = board.tile(2,2);
+        this.board.move(2,3,t);
+
+        Tile g = board.tile(2,1);
+        this.board.move(2,3,g);*/
+        changed = true;
 
         checkGameOver();
         if (changed) {
             setChanged();
         }
         return changed;
+    }
+
+    private void searchEntries(Board b) {
+        for (int i = 2; i > 0; i -= 1) {
+            for (int j = 0; j < b.size(); j += 1) {
+                if (b.tile(j,i) != null) {
+                    checkAvaliableMoves(i, j, b);
+                }
+            }
+        }
+    }
+
+    private boolean checkAvaliableMoves(int i, int j, Board b) {
+        int z = b.tile(j, i).value();
+        int i1 = 9999;      //dummy initialized value
+        Tile t = b.tile(j,i);
+        System.out.println(i);
+        System.out.println(j);
+
+        while (i < b.size()) {
+            i += 1;
+            //System.out.println(i);
+            //System.out.println(j);
+
+            if (t == null) {
+                i1 = i;
+            } else if (this.board.move(j, i, t)) {
+                System.out.println("I moved");
+                this.score += z;
+                return true;
+            } else {
+                if (i1 != 9999) {
+                    System.out.println("I moved to empty");
+                    this.board.move(j, i1, t);
+                    return true;
+                }
+            }
+
+            if (i1 == (b.size()-1)) {
+                System.out.println("I was reluctant to move");
+                this.board.move(j, i1, t);
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Checks if the game is over and sets the gameOver variable
