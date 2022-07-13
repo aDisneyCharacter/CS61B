@@ -113,13 +113,20 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
-        searchEntries(board);
+        for (int i = 2; i >= 0; i -= 1) {
+            for (int j = 0; j < this.board.size(); j += 1) {
+                if (this.board.tile(j,i) != null) {
+                    if (checkAvaliableMoves(i, j, this.board)) {
+                        changed = true;
+                    }
+                }
+            }
+        }
 /*        Tile t = board.tile(2,2);
         this.board.move(2,3,t);
 
         Tile g = board.tile(2,1);
         this.board.move(2,3,g);*/
-        changed = true;
 
         checkGameOver();
         if (changed) {
@@ -128,33 +135,28 @@ public class Model extends Observable {
         return changed;
     }
 
-    private void searchEntries(Board b) {
-        for (int i = 2; i > 0; i -= 1) {
-            for (int j = 0; j < b.size(); j += 1) {
-                if (b.tile(j,i) != null) {
-                    checkAvaliableMoves(i, j, b);
-                }
-            }
-        }
-    }
-
     private boolean checkAvaliableMoves(int i, int j, Board b) {
-        int z = b.tile(j, i).value();
-        int i1 = 9999;      //dummy initialized value
+
+        //initial values
         Tile t = b.tile(j,i);
-        System.out.println(i);
-        System.out.println(j);
+        int z = t.value();
+        int i1 = 9999;      //dummy initialized value
+
+
+        //System.out.println(i);
+        //System.out.println(j);
 
         while (i < b.size()) {
             i += 1;
-            //System.out.println(i);
-            //System.out.println(j);
+            System.out.println(i);
+            System.out.println(j);
 
-            if (t == null) {
+            if (b.tile(j,i) == null) {
                 i1 = i;
-            } else if (this.board.move(j, i, t)) {
+            } else if (b.tile(j,i).value() == z) {
+                this.board.move(j, i, t);
                 System.out.println("I moved");
-                this.score += z;
+                this.score += (z*2);
                 return true;
             } else {
                 if (i1 != 9999) {
