@@ -135,9 +135,25 @@ public class Model extends Observable {
 
     /** Returns true if at least one space on the Board is empty.
      *  Empty spaces are stored as null.
+     *  Assumption: board is always square so size is equal for x and y directions
      * */
     public static boolean emptySpaceExists(Board b) {
-        // TODO: Fill in this function.
+        //if (b.tile)
+        //return true
+        int maxSize = b.size() - 1;
+        return recursiveHelper(maxSize, maxSize, b);
+    }
+    //Note that this is a recursive implementation
+    private static boolean recursiveHelper(int i, int j, Board b) {
+        if (b.tile(j, i) == null) {
+            return true;
+        } else if (j > 0) {
+            return recursiveHelper(i, j -= 1, b);
+        } else {
+            if (i > 0) {
+                return recursiveHelper(i -= 1, b.size()-1, b);
+            }
+        }
         return false;
     }
 
@@ -146,8 +162,18 @@ public class Model extends Observable {
      * Maximum valid value is given by MAX_PIECE. Note that
      * given a Tile object t, we get its value with t.value().
      */
+
+    // Note that this is a nested for loop implementation
     public static boolean maxTileExists(Board b) {
-        // TODO: Fill in this function.
+        for (int i = 0; i < b.size(); i ++) {
+            for (int j = 0; j < b.size(); j ++) {
+                if (b.tile(j, i) == null)
+                    continue;
+                if (b.tile(j, i).value() == MAX_PIECE) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -158,10 +184,40 @@ public class Model extends Observable {
      * 2. There are two adjacent tiles with the same value.
      */
     public static boolean atLeastOneMoveExists(Board b) {
-        // TODO: Fill in this function.
+        if (emptySpaceExists(b) || comboMoveExists(b)) {
+            return true;
+        }
         return false;
     }
 
+    private static boolean comboMoveExists(Board b) {
+        int[] i_indices = {0, 0, 1, -1};
+        int[] j_indices = {1, -1, 0, 0};
+
+        for (int i = 0; i < b.size(); i += 1) {
+            for (int j = 0; j < b.size(); j += 1) {
+                if (b.tile(j, i) != null && checkAdjacent(b, i, j, b.tile(j,i).value(), i_indices, j_indices))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean checkAdjacent(Board b, int i, int j, int z, int[] i_indices, int[] j_indices) {
+        for (int k = 0; k < 4; k += 1) {
+            if (!outOfBounds(i + i_indices[k], j + j_indices[k], b) &&
+                    b.tile(j + j_indices[k], i + i_indices[k]).value() == z)
+                return true;
+            }
+        return false;
+    }
+
+    private static boolean outOfBounds(int i, int j, Board b) {
+        if (0 > i || i >= b.size() || 0 > j || j >= b.size()) {
+            return true;
+        }
+        return false;
+    }
 
     @Override
      /** Returns the model as a string, used for debugging. */
@@ -201,3 +257,5 @@ public class Model extends Observable {
         return toString().hashCode();
     }
 }
+
+
