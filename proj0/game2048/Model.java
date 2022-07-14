@@ -150,11 +150,11 @@ public class Model extends Observable {
                 this.board.move(j, i, t);
                 this.score += (z*2);
                 return i;
-            } else {
-                if (iEmpty != 0) {
+            } else if (iEmpty != 0) {
                     this.board.move(j, iEmpty, t);
                     return 9999;
-                }
+            } else {
+                return -9999;
             }
             if (iEmpty == (b.size()-1)) {           //catches special case where tile has only empty tiles above
                 this.board.move(j, iEmpty, t);
