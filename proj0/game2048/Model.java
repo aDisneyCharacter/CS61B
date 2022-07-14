@@ -1,5 +1,6 @@
 package game2048;
 
+import java.util.Arrays;
 import java.util.Formatter;
 import java.util.Observable;
 
@@ -113,12 +114,15 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
-        for (int i = 2; i >= 0; i -= 1) {
-            for (int j = 0; j < this.board.size(); j += 1) {
+        for (int j = 0; j < this.board.size(); j += 1) {
+            int[] invalidPositions = {9999,9999,9999,9999};
+
+            for (int i = 2; i >= 0; i -= 1) {
                 if (this.board.tile(j,i) != null) {
-                    if (checkAvaliableMoves(i, j, this.board)) {
+                    int result = checkAvaliableMoves(i, j, this.board, invalidPositions);
+                    if (result >= 0)
                         changed = true;
-                    }
+                        invalidPositions[i] = result;
                 }
             }
         }
@@ -135,44 +139,36 @@ public class Model extends Observable {
         return changed;
     }
 
-    private boolean checkAvaliableMoves(int i, int j, Board b) {
+    public static boolean contains(final int[] arr, final int key) {
+        return Arrays.stream(arr).anyMatch(i -> i == key);
+    }
 
+    private int checkAvaliableMoves(int i, int j, Board b, int[] inval) {
         //initial values
         Tile t = b.tile(j,i);
         int z = t.value();
         int i1 = 9999;      //dummy initialized value
 
-
-        //System.out.println(i);
-        //System.out.println(j);
-
-        while (i < b.size()) {
+        while (i < b.size()-1) {
             i += 1;
-            System.out.println(i);
-            System.out.println(j);
-
             if (b.tile(j,i) == null) {
                 i1 = i;
-            } else if (b.tile(j,i).value() == z) {
+            } else if (b.tile(j,i).value() == z && !contains(inval, i)) {
                 this.board.move(j, i, t);
-                System.out.println("I moved");
                 this.score += (z*2);
-                return true;
+                return i;
             } else {
                 if (i1 != 9999) {
-                    System.out.println("I moved to empty");
                     this.board.move(j, i1, t);
-                    return true;
+                    return 9999;
                 }
             }
-
             if (i1 == (b.size()-1)) {
-                System.out.println("I was reluctant to move");
                 this.board.move(j, i1, t);
-                return true;
+                return 9999;
             }
         }
-        return false;
+        return -9999;
     }
 
     /** Checks if the game is over and sets the gameOver variable
