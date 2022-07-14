@@ -111,27 +111,20 @@ public class Model extends Observable {
         boolean changed;
         changed = false;
 
-        // TODO: Modify this.board (and perhaps this.score) to account
-        // for the tilt to the Side SIDE. If the board changed, set the
-        // changed local variable to true.
+        board.setViewingPerspective(side);
         for (int j = 0; j < this.board.size(); j += 1) {
-            int[] invalidPositions = {9999,9999,9999,9999};
-
+            int[] invalidPositions = new int[3];
             for (int i = 2; i >= 0; i -= 1) {
                 if (this.board.tile(j,i) != null) {
                     int result = checkAvaliableMoves(i, j, this.board, invalidPositions);
-                    if (result >= 0)
+                    if (result >= 0) {
                         changed = true;
                         invalidPositions[i] = result;
+                    }
                 }
             }
         }
-/*        Tile t = board.tile(2,2);
-        this.board.move(2,3,t);
-
-        Tile g = board.tile(2,1);
-        this.board.move(2,3,g);*/
-
+        board.setViewingPerspective(side.NORTH);
         checkGameOver();
         if (changed) {
             setChanged();
@@ -139,36 +132,40 @@ public class Model extends Observable {
         return changed;
     }
 
-    public static boolean contains(final int[] arr, final int key) {
-        return Arrays.stream(arr).anyMatch(i -> i == key);
-    }
-
+    /*
+    9999 identifies changes, but no new invalidPositions
+    -9999 identifies no changes
+    specific int returns identifies invalidPositions
+     */
     private int checkAvaliableMoves(int i, int j, Board b, int[] inval) {
-        //initial values
         Tile t = b.tile(j,i);
         int z = t.value();
-        int i1 = 9999;      //dummy initialized value
+        int iEmpty = 0;      //tracking i of empty tiles
 
         while (i < b.size()-1) {
             i += 1;
             if (b.tile(j,i) == null) {
-                i1 = i;
+                iEmpty = i;
             } else if (b.tile(j,i).value() == z && !contains(inval, i)) {
                 this.board.move(j, i, t);
                 this.score += (z*2);
                 return i;
             } else {
-                if (i1 != 9999) {
-                    this.board.move(j, i1, t);
+                if (iEmpty != 0) {
+                    this.board.move(j, iEmpty, t);
                     return 9999;
                 }
             }
-            if (i1 == (b.size()-1)) {
-                this.board.move(j, i1, t);
+            if (iEmpty == (b.size()-1)) {           //catches special case where tile has only empty tiles above
+                this.board.move(j, iEmpty, t);
                 return 9999;
             }
         }
         return -9999;
+    }
+
+    public static boolean contains(final int[] arr, final int key) {
+        return Arrays.stream(arr).anyMatch(i -> i == key);
     }
 
     /** Checks if the game is over and sets the gameOver variable
@@ -234,10 +231,7 @@ public class Model extends Observable {
      * 2. There are two adjacent tiles with the same value.
      */
     public static boolean atLeastOneMoveExists(Board b) {
-        if (emptySpaceExists(b) || comboMoveExists(b)) {
-            return true;
-        }
-        return false;
+        return emptySpaceExists(b) || comboMoveExists(b);
     }
 
     private static boolean comboMoveExists(Board b) {
@@ -263,10 +257,7 @@ public class Model extends Observable {
     }
 
     private static boolean outOfBounds(int i, int j, Board b) {
-        if (0 > i || i >= b.size() || 0 > j || j >= b.size()) {
-            return true;
-        }
-        return false;
+        return 0 > i || i >= b.size() || 0 > j || j >= b.size();
     }
 
     @Override
