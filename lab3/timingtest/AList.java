@@ -62,7 +62,7 @@ public class AList<Item> {
         items[size - 1] = null;
         size = size - 1;
         return x;
-    } 
+    }
 }
 
 
